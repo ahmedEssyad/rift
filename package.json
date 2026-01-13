@@ -1,0 +1,30 @@
+{
+  "name": "rift",
+  "version": "0.0.1",
+  "description": "Zero-config multi-service runner for full-stack projects",
+  "type": "module",
+  "bin": {
+    "rift": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun src/index.ts",
+    "test": "bun test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "commander": "^13.1.0",
+    "execa": "^9.5.2",
+    "picocolors": "^1.1.1",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "bun-types": "^1.2.5",
+    "typescript": "^5.8.2"
+  }
+}
