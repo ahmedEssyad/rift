@@ -11,6 +11,12 @@ import type { Service } from "./config/schema.js";
 
 const program = new Command();
 
+function applyColorSettings(): void {
+  if (process.env.NO_COLOR !== undefined) {
+    pc.createColors(false);
+  }
+}
+
 function riftLog(message: string): void {
   console.error(`${pc.dim("rift")}  ${message}`);
 }
@@ -149,5 +155,23 @@ program
   });
 
 export function run(argv: string[]): void {
-  program.parse(argv);
+  applyColorSettings();
+
+  program.exitOverride();
+
+  try {
+    program.parse(argv);
+  } catch (err) {
+    // commander throws on --help and --version, which is fine
+    if (err instanceof Error && "exitCode" in err) {
+      const exitCode = (err as { exitCode: number }).exitCode;
+      process.exit(exitCode);
+    }
+
+    const verbose = argv.includes("--verbose") || argv.includes("-v");
+    if (verbose && err instanceof Error) {
+      console.error(err.stack);
+    }
+    process.exit(1);
+  }
 }

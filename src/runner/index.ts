@@ -199,6 +199,10 @@ export async function startAll(
     child.then((result) => {
       if (!stopping && result.exitCode !== 0) {
         logger.rift(`error: service "${service.name}" exited with code ${result.exitCode}`);
+        if (service.port !== undefined && result.stderr?.includes("EADDRINUSE")) {
+          logger.rift(`hint: port ${service.port} already in use`);
+          logger.rift(`hint: run \`lsof -i :${service.port}\` to find the process`);
+        }
       }
     });
 
