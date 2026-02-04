@@ -65,7 +65,7 @@ function formatUptime(startedAt: string): string {
 program
   .name("rift")
   .description("Zero-config multi-service runner for full-stack projects")
-  .version("0.0.1")
+  .version("0.1.0")
   .option("-v, --verbose", "show debug output and stack traces")
   .option("--no-color", "disable colored output")
   .option("-c, --config <path>", "path to rift.yml", "rift.yml");
