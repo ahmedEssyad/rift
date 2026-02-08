@@ -105,7 +105,13 @@ function detectFramework(dir: string): Detection | null {
 
   // Expo / React Native (before generic React — Expo uses React)
   if (hasDep(pkg, "expo")) {
-    return { framework: "expo", run: "npx expo start", install: "npm install", port: 8081 };
+    let port = 8081;
+    const startScript = (pkg as Record<string, unknown> & { scripts?: Record<string, string> }).scripts?.start;
+    if (startScript) {
+      const portMatch = startScript.match(/--port\s+(\d+)/);
+      if (portMatch) port = parseInt(portMatch[1], 10);
+    }
+    return { framework: "expo", run: "npm start", install: "npm install", port };
   }
 
   // React (CRA or Vite)
