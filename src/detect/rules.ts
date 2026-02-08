@@ -103,6 +103,11 @@ function detectFramework(dir: string): Detection | null {
     return { framework: "vue", run: "npm run dev", build: "npm run build", install: "npm install", port: 5173 };
   }
 
+  // Expo / React Native (before generic React — Expo uses React)
+  if (hasDep(pkg, "expo")) {
+    return { framework: "expo", run: "npx expo start", install: "npm install", port: 8081 };
+  }
+
   // React (CRA or Vite)
   if (hasDep(pkg, "react-scripts")) {
     return { framework: "react", run: "npm start", build: "npm run build", test: "npm test", install: "npm install", port: 3000 };
