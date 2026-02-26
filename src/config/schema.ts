@@ -7,6 +7,7 @@ export interface Service {
   test?: string;
   install?: string;
   port?: number;
+  restart?: number;
   depends_on?: string[];
   env?: Record<string, string>;
 }

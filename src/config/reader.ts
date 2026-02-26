@@ -3,8 +3,7 @@ import { parse } from "yaml";
 import type { Service, RiftConfig } from "./schema.js";
 
 function fatal(message: string): never {
-  console.error(`rift  error: ${message}`);
-  process.exit(1);
+  throw new Error(message);
 }
 
 interface RawService {
@@ -15,6 +14,7 @@ interface RawService {
   test?: unknown;
   install?: unknown;
   port?: unknown;
+  restart?: unknown;
   depends_on?: unknown;
   env?: unknown;
 }
@@ -41,6 +41,7 @@ function validateService(name: string, raw: RawService): Service {
   if (typeof raw.test === "string") service.test = raw.test;
   if (typeof raw.install === "string") service.install = raw.install;
   if (typeof raw.port === "number") service.port = raw.port;
+  if (typeof raw.restart === "number") service.restart = raw.restart;
 
   if (Array.isArray(raw.depends_on)) {
     service.depends_on = raw.depends_on.filter((d): d is string => typeof d === "string");

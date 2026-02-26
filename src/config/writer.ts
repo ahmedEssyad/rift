@@ -12,6 +12,7 @@ interface YamlServiceEntry {
   test?: string;
   install?: string;
   port?: number;
+  restart?: number;
   depends_on?: string[];
   env?: Record<string, string>;
 }
@@ -30,6 +31,7 @@ function servicesToKeyed(services: Service[]): Record<string, YamlServiceEntry> 
     if (service.test) entry.test = service.test;
     if (service.install) entry.install = service.install;
     if (service.port !== undefined) entry.port = service.port;
+    if (service.restart !== undefined) entry.restart = service.restart;
     if (service.depends_on && service.depends_on.length > 0) entry.depends_on = service.depends_on;
     if (service.env && Object.keys(service.env).length > 0) entry.env = service.env;
 

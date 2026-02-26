@@ -1,25 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import { homedir } from "node:os";
 import { detectServices } from "./rules.js";
+import { resolveApiKey } from "../utils.js";
 import type { Service } from "../config/schema.js";
-
-function resolveApiKey(flagKey?: string): string | undefined {
-  if (flagKey) return flagKey;
-
-  const envKey = process.env.ANTHROPIC_API_KEY;
-  if (envKey) return envKey;
-
-  const configPath = join(homedir(), ".rift", "config.json");
-  if (existsSync(configPath)) {
-    try {
-      const config = JSON.parse(readFileSync(configPath, "utf-8"));
-      if (typeof config.api_key === "string") return config.api_key;
-    } catch { /* ignore */ }
-  }
-
-  return undefined;
-}
 
 export async function detect(dir: string, flagApiKey?: string, verbose?: boolean): Promise<Service[]> {
   const apiKey = resolveApiKey(flagApiKey);
@@ -41,5 +22,5 @@ export async function detect(dir: string, flagApiKey?: string, verbose?: boolean
     }
   }
 
-  return detectServices(dir);
+  return detectServices(dir, verbose);
 }
