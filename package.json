@@ -1,10 +1,11 @@
 {
   "name": "rift",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Zero-config multi-service runner for full-stack projects",
   "type": "module",
   "bin": {
-    "rift": "./dist/index.js"
+    "rift": "./dist/index.js",
+    "rift-mcp": "./dist/mcp.js"
   },
   "main": "./dist/index.js",
   "scripts": {
@@ -31,10 +32,12 @@
   ],
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "commander": "^13.1.0",
     "execa": "^9.5.2",
     "picocolors": "^1.1.1",
-    "yaml": "^2.7.0"
+    "yaml": "^2.7.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
