@@ -105,4 +105,55 @@ describe("rule-based detection", () => {
     const services = detectFixture("empty-project");
     expect(services.length).toBe(0);
   });
+
+  test("detects fastapi from pyproject.toml", () => {
+    const services = detectFixture("fastapi-pyproject");
+    expect(services.length).toBe(1);
+    expect(services[0].framework).toBe("fastapi");
+    expect(services[0].port).toBe(8000);
+    expect(services[0].install).toBe("pip install -e .");
+  });
+
+  test("skips workspace root, detects workspace packages", () => {
+    const services = detectFixture("workspace-root");
+    expect(services.length).toBe(1);
+    expect(services[0].framework).toBe("nextjs");
+    expect(services[0].name).toBe("web");
+  });
+
+  test("detects procfile entries alongside framework detection", () => {
+    const services = detectFixture("rails-procfile");
+    const frameworks = services.map((s) => s.framework);
+    expect(frameworks).toContain("rails");
+    expect(frameworks).toContain("procfile");
+    const procfileServices = services.filter((s) => s.framework === "procfile");
+    expect(procfileServices.length).toBe(3);
+    const names = procfileServices.map((s) => s.name).sort();
+    expect(names).toEqual(["css", "web", "worker"]);
+  });
+
+  test("skips template directories", () => {
+    const services = detectFixture("project-with-template");
+    expect(services.length).toBe(1);
+    expect(services[0].name).toBe("project-with-template");
+  });
+
+  test("detects rails via railties gem", () => {
+    const services = detectFixture("rails-railties");
+    expect(services.length).toBe(1);
+    expect(services[0].framework).toBe("rails");
+    expect(services[0].port).toBe(3000);
+  });
+
+  test("skips rust workspace members, detects root", () => {
+    const services = detectFixture("rust-workspace");
+    expect(services.length).toBe(1);
+    expect(services[0].framework).toBe("rust");
+    expect(services[0].name).toBe("rust-workspace");
+  });
+
+  test("skips express library without start/dev script", () => {
+    const services = detectFixture("express-library");
+    expect(services.length).toBe(0);
+  });
 });

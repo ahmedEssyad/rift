@@ -1,173 +1,15 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, relative, basename } from "node:path";
 import type { Service } from "../config/schema.js";
+import { readJson, readTextLines, hasFile, hasServiceMarker, detectFramework } from "./frameworks.js";
+import type { PackageJson } from "./frameworks.js";
 
 const SKIP_DIRS = new Set([
   "node_modules", ".git", "dist", "build", ".next", ".nuxt",
   "__pycache__", ".venv", "venv", "target", ".rift", "vendor",
+  "template", "templates", "examples", "example", "fixtures",
+  "__tests__", "test", "tests", "e2e", "cypress",
 ]);
-
-const SERVICE_MARKERS = ["package.json", "requirements.txt", "go.mod", "Cargo.toml", "Gemfile"];
-
-interface PackageJson {
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-  workspaces?: string[] | { packages: string[] };
-}
-
-function readJson(filePath: string): Record<string, unknown> | null {
-  try {
-    return JSON.parse(readFileSync(filePath, "utf-8"));
-  } catch {
-    return null;
-  }
-}
-
-function readTextLines(filePath: string): string[] {
-  try {
-    return readFileSync(filePath, "utf-8").split("\n");
-  } catch {
-    return [];
-  }
-}
-
-function hasFile(dir: string, name: string): boolean {
-  return existsSync(join(dir, name));
-}
-
-function hasFileGlob(dir: string, prefix: string): boolean {
-  try {
-    return readdirSync(dir).some((f) => f.startsWith(prefix));
-  } catch {
-    return false;
-  }
-}
-
-function hasDep(pkg: PackageJson | null, name: string): boolean {
-  if (pkg === null) return false;
-  return name in (pkg.dependencies ?? {}) || name in (pkg.devDependencies ?? {});
-}
-
-function hasPyDep(dir: string, name: string): boolean {
-  const lines = readTextLines(join(dir, "requirements.txt"));
-  return lines.some((line) => {
-    const trimmed = line.trim().toLowerCase();
-    return trimmed === name || trimmed.startsWith(name + "==") || trimmed.startsWith(name + ">=");
-  });
-}
-
-function hasGemDep(dir: string, name: string): boolean {
-  const lines = readTextLines(join(dir, "Gemfile"));
-  return lines.some((line) => line.includes(`'${name}'`) || line.includes(`"${name}"`));
-}
-
-interface Detection {
-  framework: string;
-  run: string;
-  build?: string;
-  test?: string;
-  install?: string;
-  port?: number;
-}
-
-function detectFramework(dir: string): Detection | null {
-  const pkg = readJson(join(dir, "package.json")) as PackageJson | null;
-
-  // NestJS (before Express — it uses Express internally)
-  if (hasFile(dir, "nest-cli.json") || hasDep(pkg, "@nestjs/core")) {
-    return { framework: "nestjs", run: "npm run start:dev", test: "npm test", install: "npm install", port: 3000 };
-  }
-
-  // Nuxt (before Vue — Nuxt is built on Vue)
-  if (hasFileGlob(dir, "nuxt.config") || hasDep(pkg, "nuxt")) {
-    return { framework: "nuxt", run: "npm run dev", build: "npm run build", install: "npm install", port: 3000 };
-  }
-
-  // Next.js (before React — Next uses React)
-  if (hasFileGlob(dir, "next.config") || hasDep(pkg, "next")) {
-    return { framework: "nextjs", run: "npm run dev", build: "npm run build", test: "npm test", install: "npm install", port: 3000 };
-  }
-
-  // SvelteKit / Svelte
-  if (hasFileGlob(dir, "svelte.config") || hasDep(pkg, "@sveltejs/kit") || hasDep(pkg, "svelte")) {
-    return { framework: "svelte", run: "npm run dev", build: "npm run build", install: "npm install", port: 5173 };
-  }
-
-  // Angular
-  if (hasFile(dir, "angular.json") || hasDep(pkg, "@angular/core")) {
-    return { framework: "angular", run: "npm start", build: "npm run build", test: "npm test", install: "npm install", port: 4200 };
-  }
-
-  // Vue (Vite + Vue)
-  if (hasDep(pkg, "vue")) {
-    return { framework: "vue", run: "npm run dev", build: "npm run build", install: "npm install", port: 5173 };
-  }
-
-  // Expo / React Native (before generic React — Expo uses React)
-  if (hasDep(pkg, "expo")) {
-    let port = 8081;
-    const startScript = (pkg as Record<string, unknown> & { scripts?: Record<string, string> }).scripts?.start;
-    if (startScript) {
-      const portMatch = startScript.match(/--port\s+(\d+)/);
-      if (portMatch) port = parseInt(portMatch[1], 10);
-    }
-    return { framework: "expo", run: "npm start", install: "npm install", port };
-  }
-
-  // React (CRA or Vite)
-  if (hasDep(pkg, "react-scripts")) {
-    return { framework: "react", run: "npm start", build: "npm run build", test: "npm test", install: "npm install", port: 3000 };
-  }
-  if (hasDep(pkg, "vite") && hasDep(pkg, "react")) {
-    return { framework: "react", run: "npm run dev", build: "npm run build", install: "npm install", port: 5173 };
-  }
-
-  // Fastify (before Express — more specific)
-  if (hasDep(pkg, "fastify")) {
-    return { framework: "fastify", run: "npm run dev", test: "npm test", install: "npm install", port: 3000 };
-  }
-
-  // Express
-  if (hasDep(pkg, "express")) {
-    return { framework: "express", run: "npm start", test: "npm test", install: "npm install", port: 3000 };
-  }
-
-  // Django
-  if (hasFile(dir, "manage.py") && hasPyDep(dir, "django")) {
-    return { framework: "django", run: "python manage.py runserver", test: "python manage.py test", install: "pip install -r requirements.txt", port: 8000 };
-  }
-
-  // Flask
-  if ((hasFile(dir, "app.py") || hasFile(dir, "wsgi.py")) && hasPyDep(dir, "flask")) {
-    return { framework: "flask", run: "flask run", install: "pip install -r requirements.txt", port: 5000 };
-  }
-
-  // FastAPI
-  if (hasPyDep(dir, "fastapi")) {
-    return { framework: "fastapi", run: "uvicorn main:app --reload", install: "pip install -r requirements.txt", port: 8000 };
-  }
-
-  // Rails
-  if (hasFile(dir, "Gemfile") && hasFile(dir, "config/routes.rb") && hasGemDep(dir, "rails")) {
-    return { framework: "rails", run: "bin/rails server", test: "bin/rails test", install: "bundle install", port: 3000 };
-  }
-
-  // Go
-  if (hasFile(dir, "go.mod")) {
-    return { framework: "go", run: "go run .", build: "go build .", test: "go test ./..." };
-  }
-
-  // Rust
-  if (hasFile(dir, "Cargo.toml")) {
-    return { framework: "rust", run: "cargo run", build: "cargo build", test: "cargo test" };
-  }
-
-  return null;
-}
-
-function hasServiceMarker(dir: string): boolean {
-  return SERVICE_MARKERS.some((marker) => hasFile(dir, marker));
-}
 
 function getWorkspaceDirs(root: string): string[] {
   const pkg = readJson(join(root, "package.json")) as PackageJson | null;
@@ -226,15 +68,13 @@ function getWorkspaceDirs(root: string): string[] {
   return [];
 }
 
-export function scanDirectories(root: string): string[] {
+export function scanDirectories(root: string, verbose?: boolean): string[] {
   const candidates = new Set<string>();
 
-  // Root is always a candidate
   if (hasServiceMarker(root)) {
     candidates.add(root);
   }
 
-  // Check workspace/monorepo dirs first
   const workspaceDirs = getWorkspaceDirs(root);
   for (const dir of workspaceDirs) {
     if (hasServiceMarker(dir)) {
@@ -242,7 +82,6 @@ export function scanDirectories(root: string): string[] {
     }
   }
 
-  // Walk up to 3 levels deep
   function walk(dir: string, depth: number): void {
     if (depth > 3) return;
     try {
@@ -255,20 +94,62 @@ export function scanDirectories(root: string): string[] {
         }
         walk(full, depth + 1);
       }
-    } catch { /* permission error, skip */ }
+    } catch (err) {
+      if (verbose) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`rift  warning: failed to scan ${dir}: ${msg}`);
+      }
+    }
   }
 
   walk(root, 1);
   return Array.from(candidates);
 }
 
-export function detectServices(root: string): Service[] {
-  const dirs = scanDirectories(root);
+interface ProcfileEntry {
+  name: string;
+  command: string;
+}
+
+function parseProcfile(filePath: string): ProcfileEntry[] {
+  const lines = readTextLines(filePath);
+  const entries: ProcfileEntry[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed === "" || trimmed.startsWith("#")) continue;
+    const colonIdx = trimmed.indexOf(":");
+    if (colonIdx === -1) continue;
+    const name = trimmed.slice(0, colonIdx).trim();
+    const command = trimmed.slice(colonIdx + 1).trim();
+    if (name !== "" && command !== "") {
+      entries.push({ name, command });
+    }
+  }
+  return entries;
+}
+
+const JS_FRAMEWORKS = new Set([
+  "nextjs", "nuxt", "react", "vue", "svelte", "angular",
+  "express", "fastify", "nestjs", "expo",
+]);
+
+function isWorkspaceRoot(dir: string): boolean {
+  const pkg = readJson(join(dir, "package.json")) as PackageJson | null;
+  if (pkg?.workspaces) return true;
+  if (hasFile(dir, "pnpm-workspace.yaml")) return true;
+  return false;
+}
+
+export function detectServices(root: string, verbose?: boolean): Service[] {
+  const dirs = scanDirectories(root, verbose);
   const services: Service[] = [];
 
   for (const dir of dirs) {
     const detection = detectFramework(dir);
     if (detection === null) continue;
+
+    // Skip JS framework false positives at workspace roots (deps are shared, not runnable)
+    if (dir === root && isWorkspaceRoot(dir) && JS_FRAMEWORKS.has(detection.framework)) continue;
 
     const relPath = dir === root ? "." : "./" + relative(root, dir);
     const name = dir === root ? basename(root) : basename(dir);
@@ -283,6 +164,30 @@ export function detectServices(root: string): Service[] {
       install: detection.install,
       port: detection.port,
     });
+  }
+
+  // Parse Procfile.dev / Procfile for additional services
+  for (const dir of dirs) {
+    const relPath = dir === root ? "." : "./" + relative(root, dir);
+    const procfilePath = existsSync(join(dir, "Procfile.dev"))
+      ? join(dir, "Procfile.dev")
+      : existsSync(join(dir, "Procfile"))
+        ? join(dir, "Procfile")
+        : null;
+    if (procfilePath === null) continue;
+
+    const existingNames = new Set(services.map((s) => s.name));
+    const entries = parseProcfile(procfilePath);
+    for (const entry of entries) {
+      if (existingNames.has(entry.name)) continue;
+      services.push({
+        name: entry.name,
+        path: relPath,
+        framework: "procfile",
+        run: entry.command,
+      });
+      existingNames.add(entry.name);
+    }
   }
 
   return services;
