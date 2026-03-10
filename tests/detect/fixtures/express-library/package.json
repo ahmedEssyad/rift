@@ -1,0 +1,1 @@
+{ "name": "@myorg/utils", "dependencies": { "express": "4.18.0" }, "scripts": { "build": "tsc", "test": "jest" } }

@@ -1,0 +1,7 @@
+[workspace]
+members = ["crates/mylib"]
+
+[package]
+name = "myapp"
+version = "0.1.0"
+edition = "2021"
