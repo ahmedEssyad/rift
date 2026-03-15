@@ -1,0 +1,216 @@
+@import "tailwindcss";
+
+/* ========================================
+   Design System - Rift Landing Page
+   Adapted from Marmaise design system
+   ======================================== */
+
+:root {
+  /* Colors - Light Theme (default) */
+  --accent: #06B6D4;
+  --accent-hover: #0891B2;
+  --foreground: #0A0A0A;
+  --background: #F9F9F9;
+  --surface: #FFFFFF;
+  --surface-secondary: #F1F5F9;
+  --surface-tertiary: #F8FAFC;
+  --border: #E2E8F0;
+  --border-light: #F1F5F9;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+
+  /* Buttons */
+  --btn-primary-bg: #0F172A;
+  --btn-primary-text: #FFFFFF;
+
+  /* Decorative */
+  --glow-cyan: rgba(6, 182, 212, 0.15);
+  --glow-magenta: rgba(217, 70, 239, 0.15);
+
+  /* Terminal colors (from rift's log palette) */
+  --term-cyan: #22D3EE;
+  --term-magenta: #E879F9;
+  --term-yellow: #FACC15;
+  --term-green: #4ADE80;
+  --term-blue: #60A5FA;
+  --term-red: #F87171;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --foreground: #FAFAFA;
+  --background: #0A0A0A;
+  --surface: #141414;
+  --surface-secondary: #1C1C1C;
+  --surface-tertiary: #0F0F0F;
+  --border: #262626;
+  --border-light: #1E1E1E;
+  --text-primary: #FAFAFA;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
+  --glow-cyan: rgba(6, 182, 212, 0.08);
+  --glow-magenta: rgba(217, 70, 239, 0.08);
+
+  --btn-primary-bg: #FAFAFA;
+  --btn-primary-text: #0A0A0A;
+}
+
+/* System preference detection */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --foreground: #FAFAFA;
+    --background: #0A0A0A;
+    --surface: #141414;
+    --surface-secondary: #1C1C1C;
+    --surface-tertiary: #0F0F0F;
+    --border: #262626;
+    --border-light: #1E1E1E;
+    --text-primary: #FAFAFA;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
+    --glow-cyan: rgba(6, 182, 212, 0.08);
+    --glow-magenta: rgba(217, 70, 239, 0.08);
+
+    --btn-primary-bg: #FAFAFA;
+    --btn-primary-text: #0A0A0A;
+  }
+}
+
+/* Tailwind theme tokens */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+
+html {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+*,
+*::before,
+*::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+}
+
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+/* ========================================
+   Components
+   ======================================== */
+
+/* Viewport Glow Effect */
+.viewport-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 0% 0%, var(--glow-cyan) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, var(--glow-magenta) 0%, transparent 40%);
+  filter: blur(60px);
+}
+
+/* Typography */
+.display-title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.section-title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+/* Primary Button */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  padding: 14px 28px;
+  border-radius: 100px;
+  font-weight: 500;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+/* Label style */
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slide-up-fade 0.3s ease-out forwards;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Scrollbar styling */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}

@@ -2,3 +2,6 @@ node_modules/
 dist/
 .rift/
 *.tsbuildinfo
+CLAUDE.md
+site/.next/
+site/out/
