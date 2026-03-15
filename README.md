@@ -10,12 +10,24 @@ npx rift-dev status → shows what's running
 npx rift-dev fix    → diagnoses crashed services
 ```
 
+## Install
+
+```bash
+npm install -g rift-dev
+```
+
+Or use directly with npx (no install needed):
+
+```bash
+npx rift-dev init
+```
+
 ## Quick start
 
 ```bash
 cd my-fullstack-project
-npx rift-dev init
-npx rift-dev run
+rift init
+rift run
 ```
 
 That's it. No config files to write. Rift scans your project, detects frameworks, resolves port conflicts, and generates a `rift.yml` with the right commands, ports, and dependencies.
