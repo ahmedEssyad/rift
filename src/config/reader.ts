@@ -101,5 +101,16 @@ export function readConfig(filePath: string): RiftConfig {
     fatal(`${filePath} has no services defined`);
   }
 
+  const serviceNames = new Set(services.map((s) => s.name));
+  for (const service of services) {
+    if (service.depends_on) {
+      for (const dep of service.depends_on) {
+        if (!serviceNames.has(dep)) {
+          fatal(`service "${service.name}" depends on unknown service "${dep}"`);
+        }
+      }
+    }
+  }
+
   return { version: 1, services };
 }

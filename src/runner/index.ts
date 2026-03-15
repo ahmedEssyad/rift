@@ -61,7 +61,6 @@ export async function stopServices(root: string): Promise<StopResult> {
   const result: StopResult = { stopped: [], alreadyStopped: [] };
 
   if (entries.length === 0) {
-    console.error("rift  no running services found");
     return result;
   }
 
@@ -70,13 +69,11 @@ export async function stopServices(root: string): Promise<StopResult> {
       try {
         process.kill(entry.pid, "SIGTERM");
         result.stopped.push(entry.name);
-        console.error(`rift  stopped ${entry.name} (pid ${entry.pid})`);
       } catch {
-        console.error(`rift  failed to stop ${entry.name} (pid ${entry.pid})`);
+        // failed to stop — don't add to either list
       }
     } else {
       result.alreadyStopped.push(entry.name);
-      console.error(`rift  ${entry.name} already stopped`);
     }
   }
 

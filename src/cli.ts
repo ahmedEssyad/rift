@@ -171,6 +171,13 @@ program
     const result = await stopServices(resolve("."));
     if (json) {
       jsonOut(result);
+    } else {
+      if (result.stopped.length === 0 && result.alreadyStopped.length === 0) {
+        riftLog("no running services found");
+      } else {
+        for (const name of result.stopped) riftLog(`stopped ${name}`);
+        for (const name of result.alreadyStopped) riftLog(`${name} already stopped`);
+      }
     }
   });
 

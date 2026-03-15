@@ -1,5 +1,8 @@
 import { describe, test, expect } from "bun:test";
 import { resolve } from "node:path";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { readConfig } from "../../src/config/reader.js";
 
 const FIXTURE = resolve(import.meta.dir, "../fixtures/rift.yml");
@@ -31,5 +34,12 @@ describe("config reader", () => {
     const config = readConfig(FIXTURE);
     const api = config.services.find((s) => s.name === "api")!;
     expect(api.depends_on).toBeUndefined();
+  });
+
+  test("throws on unknown depends_on reference", () => {
+    const dir = mkdtempSync(join(tmpdir(), "rift-test-"));
+    const configPath = join(dir, "rift.yml");
+    writeFileSync(configPath, `version: 1\nservices:\n  web:\n    path: ./web\n    framework: nextjs\n    run: npm run dev\n    depends_on:\n      - nonexistent\n`, "utf-8");
+    expect(() => readConfig(configPath)).toThrow('service "web" depends on unknown service "nonexistent"');
   });
 });

@@ -13,7 +13,7 @@ import { startServices, readPidFile, processAlive, stopServices } from "./runner
 import { resolvePortConflicts, propagatePortChanges } from "./runner/ports.js";
 
 const server = new McpServer(
-  { name: "rift", version: "0.2.0" },
+  { name: "rift", version: "0.2.4" },
   { capabilities: { tools: {} } },
 );
 
