@@ -53,7 +53,7 @@ export default function FloatingNav() {
               Blog
             </a>
             <a
-              href="https://github.com/your-username/rift"
+              href="https://github.com/ahmedEssyad/rift"
               className="text-[14px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150 flex items-center gap-2"
             >
               <Github className="w-4 h-4" />
@@ -110,7 +110,7 @@ export default function FloatingNav() {
             Blog
           </a>
           <a
-            href="https://github.com/your-username/rift"
+            href="https://github.com/ahmedEssyad/rift"
             onClick={() => setMobileMenuOpen(false)}
             className="block w-full px-4 py-4 text-center text-[15px] font-medium text-[var(--text-secondary)] rounded-2xl hover:bg-[var(--surface-secondary)] transition-colors"
           >
@@ -128,7 +128,7 @@ export default function FloatingNav() {
         <div className="mt-auto mb-10 flex items-center justify-center gap-6 text-[14px] text-[var(--text-secondary)]">
           <ThemeToggle />
           <a href="https://npmjs.com/package/rift-dev" className="hover:text-[var(--text-primary)] transition-colors">npm</a>
-          <a href="https://github.com/your-username/rift" className="hover:text-[var(--text-primary)] transition-colors">GitHub</a>
+          <a href="https://github.com/ahmedEssyad/rift" className="hover:text-[var(--text-primary)] transition-colors">GitHub</a>
         </div>
       </div>
     </>

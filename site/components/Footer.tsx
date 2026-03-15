@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="flex gap-6 mt-4 md:mt-0">
         <a href="https://blog.essyad.site/rift-the-architecture-of-a-zero-config-dev-runner" className="hover:text-[var(--text-primary)] transition-colors">Blog</a>
         <a href="https://npmjs.com/package/rift-dev" className="hover:text-[var(--text-primary)] transition-colors">npm</a>
-        <a href="https://github.com/your-username/rift" className="hover:text-[var(--text-primary)] transition-colors">GitHub</a>
+        <a href="https://github.com/ahmedEssyad/rift" className="hover:text-[var(--text-primary)] transition-colors">GitHub</a>
       </div>
     </footer>
   );

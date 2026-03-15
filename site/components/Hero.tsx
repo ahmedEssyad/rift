@@ -23,7 +23,7 @@ export default function Hero() {
               <code className="text-sm font-mono text-[var(--text-primary)]">npm i -g rift-dev && rift init</code>
               <CopyButton text="npm install -g rift-dev && rift init" />
             </div>
-            <a href="https://github.com/your-username/rift" className="px-8 py-3.5 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] font-medium rounded-full hover:border-[var(--text-primary)] transition-colors flex items-center gap-2">
+            <a href="https://github.com/ahmedEssyad/rift" className="px-8 py-3.5 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] font-medium rounded-full hover:border-[var(--text-primary)] transition-colors flex items-center gap-2">
               <Github className="w-4 h-4" />
               View on GitHub
             </a>
