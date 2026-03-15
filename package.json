@@ -1,10 +1,11 @@
 {
-  "name": "rift",
-  "version": "0.2.0",
+  "name": "rift-dev",
+  "version": "0.2.1",
   "description": "Zero-config multi-service runner for full-stack projects",
   "type": "module",
   "bin": {
     "rift": "./dist/index.js",
+    "rift-dev": "./dist/index.js",
     "rift-mcp": "./dist/mcp.js"
   },
   "main": "./dist/index.js",
