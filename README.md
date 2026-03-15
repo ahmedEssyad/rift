@@ -222,8 +222,6 @@ bun test             # 94 tests
 bun run build        # compile TS → JS
 ```
 
-See [CLAUDE.md](./CLAUDE.md) for architecture, coding standards, and design principles.
-
 ## License
 
 MIT
