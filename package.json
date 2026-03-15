@@ -1,6 +1,6 @@
 {
   "name": "rift-dev",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Zero-config multi-service runner for full-stack projects",
   "type": "module",
   "bin": {
