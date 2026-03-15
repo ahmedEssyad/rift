@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Check, Sun, Moon, Monitor } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Sun, Moon, Monitor } from "lucide-react";
 
 type Theme = "light" | "dark" | "system";
+
+function applyTheme(theme: Theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+}
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>("dark");
@@ -14,71 +18,78 @@ export function useTheme() {
     const stored = localStorage.getItem("theme") as Theme | null;
     if (stored) {
       setTheme(stored);
-      document.documentElement.setAttribute("data-theme", stored);
+      applyTheme(stored);
     } else {
-      document.documentElement.setAttribute("data-theme", "dark");
+      applyTheme("dark");
     }
   }, []);
 
-  const changeTheme = (newTheme: Theme) => {
+  const changeTheme = useCallback((newTheme: Theme) => {
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
-  };
+    applyTheme(newTheme);
+  }, []);
 
   return { theme, setTheme: changeTheme, mounted };
 }
 
+const THEMES: { value: Theme; icon: typeof Sun; label: string }[] = [
+  { value: "light", icon: Sun, label: "Light" },
+  { value: "dark", icon: Moon, label: "Dark" },
+  { value: "system", icon: Monitor, label: "System" },
+];
+
+// Compact toggle for desktop nav — cycles through themes on click
 export default function ThemeToggle() {
   const { theme, setTheme, mounted } = useTheme();
-  const [open, setOpen] = useState(false);
 
-  if (!mounted) {
-    return <div className="w-9 h-9" />;
-  }
+  if (!mounted) return <div className="w-9 h-9" />;
 
-  const themes: { value: Theme; icon: React.ReactNode; label: string }[] = [
-    { value: "light", icon: <Sun className="w-4 h-4" />, label: "Light" },
-    { value: "dark", icon: <Moon className="w-4 h-4" />, label: "Dark" },
-    { value: "system", icon: <Monitor className="w-4 h-4" />, label: "System" },
-  ];
+  const currentIdx = THEMES.findIndex((t) => t.value === theme);
+  const CurrentIcon = THEMES[currentIdx >= 0 ? currentIdx : 1].icon;
 
-  const currentIcon = themes.find((t) => t.value === theme)?.icon || <Moon className="w-4 h-4" />;
+  const cycleTheme = () => {
+    const nextIdx = (currentIdx + 1) % THEMES.length;
+    setTheme(THEMES[nextIdx].value);
+  };
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--surface-secondary)] transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-        aria-label="Toggle theme"
-      >
-        {currentIcon}
-      </button>
+    <button
+      onClick={cycleTheme}
+      className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--surface-secondary)] transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+      aria-label={`Theme: ${theme}. Click to change.`}
+    >
+      <CurrentIcon className="w-4 h-4" />
+    </button>
+  );
+}
 
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 z-50 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg overflow-hidden min-w-[140px]">
-            {themes.map((t) => (
-              <button
-                key={t.value}
-                onClick={() => {
-                  setTheme(t.value);
-                  setOpen(false);
-                }}
-                className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm transition-colors ${theme === t.value
-                  ? "bg-[var(--surface-secondary)] text-[var(--text-primary)]"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--surface-secondary)] hover:text-[var(--text-primary)]"
-                  }`}
-              >
-                {t.icon}
-                <span>{t.label}</span>
-                {theme === t.value && <Check className="w-4 h-4 ml-auto text-[var(--accent)]" />}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+// Inline row for mobile menu — shows all three options side by side
+export function ThemeToggleInline() {
+  const { theme, setTheme, mounted } = useTheme();
+
+  if (!mounted) return <div className="h-12" />;
+
+  return (
+    <div className="flex items-center justify-center gap-2 py-3">
+      {THEMES.map((t) => {
+        const Icon = t.icon;
+        const isActive = theme === t.value;
+        return (
+          <button
+            key={t.value}
+            onClick={() => setTheme(t.value)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors ${
+              isActive
+                ? "bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)]"
+                : "text-[var(--text-secondary)] hover:bg-[var(--surface-secondary)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            {t.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
