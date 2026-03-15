@@ -2,12 +2,14 @@
 
 Zero-config multi-service runner for full-stack projects. One command to detect, configure, and run everything.
 
+> Published as `rift-dev` on npm (`rift` was taken). Install once, then use `rift` everywhere.
+
 ```
-npx rift-dev init   → scans your project, generates rift.yml
-npx rift-dev run    → starts all services, one terminal
-npx rift-dev stop   → kills everything
-npx rift-dev status → shows what's running
-npx rift-dev fix    → diagnoses crashed services
+rift init   → scans your project, generates rift.yml
+rift run    → starts all services, one terminal
+rift stop   → kills everything
+rift status → shows what's running
+rift fix    → diagnoses crashed services
 ```
 
 ## Install
@@ -35,7 +37,7 @@ That's it. No config files to write. Rift scans your project, detects frameworks
 ## Example output
 
 ```
-$ npx rift-dev init
+$ rift init
 rift  scanning ./my-project...
 rift  port conflict: reassigned worker from :3000 to :3001
 rift  updated frontend/.env (:3000 -> :3001)
@@ -44,11 +46,11 @@ rift    api       django    ./backend       :8000
 rift    frontend  nextjs    ./frontend      :3000
 rift    worker    express   ./worker        :3001
 rift  wrote rift.yml
-rift  run `npx rift-dev run` to start all services
+rift  run `rift run` to start all services
 ```
 
 ```
-$ npx rift-dev run
+$ rift run
 rift      starting api (port 8000)...
 rift      starting frontend (port 3000)...
 api       Watching for file changes with StatReloader
@@ -98,8 +100,8 @@ Set `ANTHROPIC_API_KEY` to enable AI detection for frameworks beyond this list.
 Scans the project, detects services, resolves port conflicts, and writes `rift.yml`.
 
 ```bash
-npx rift-dev init              # rule-based detection
-ANTHROPIC_API_KEY=sk-... npx rift-dev init  # AI-enhanced detection
+rift init                          # rule-based detection
+ANTHROPIC_API_KEY=sk-... rift init # AI-enhanced detection
 ```
 
 ### `rift run`
@@ -107,8 +109,8 @@ ANTHROPIC_API_KEY=sk-... npx rift-dev init  # AI-enhanced detection
 Starts all services with multiplexed logs. Press `r` to show CPU/memory usage.
 
 ```bash
-npx rift-dev run
-npx rift-dev run --max-restarts 5
+rift run
+rift run --max-restarts 5
 ```
 
 ### `rift stop`
@@ -116,7 +118,7 @@ npx rift-dev run --max-restarts 5
 Stops all running services.
 
 ```bash
-npx rift-dev stop
+rift stop
 ```
 
 ### `rift status`
@@ -124,8 +126,8 @@ npx rift-dev stop
 Shows running services with PIDs, ports, and uptime.
 
 ```bash
-npx rift-dev status
-npx rift-dev status --json
+rift status
+rift status --json
 ```
 
 ### `rift fix`
@@ -133,8 +135,8 @@ npx rift-dev status --json
 Diagnoses crashed services using AI or pattern matching.
 
 ```bash
-npx rift-dev fix               # diagnose only
-npx rift-dev fix --apply       # diagnose and execute fixes
+rift fix               # diagnose only
+rift fix --apply       # diagnose and execute fixes
 ```
 
 ## Global flags
@@ -162,7 +164,7 @@ Rift ships an MCP server that exposes 6 tools for Claude Code and other MCP clie
 ### Setup with Claude Code
 
 ```bash
-claude mcp add rift-mcp -- npx rift-dev mcp
+claude mcp add rift-mcp -- npx -p rift-dev rift-mcp
 ```
 
 ### Setup with Claude Desktop
@@ -174,7 +176,7 @@ Add to `claude_desktop_config.json`:
   "mcpServers": {
     "rift": {
       "command": "npx",
-      "args": ["rift-dev", "mcp"]
+      "args": ["-p", "rift-dev", "rift-mcp"]
     }
   }
 }
