@@ -3,43 +3,58 @@
 Zero-config multi-service runner for full-stack projects. One command to detect, configure, and run everything.
 
 ```
-npx rift init   → scans your project, generates rift.yml
-npx rift run    → starts all services, one terminal
-npx rift stop   → kills everything
-npx rift status → shows what's running
+npx rift-dev init   → scans your project, generates rift.yml
+npx rift-dev run    → starts all services, one terminal
+npx rift-dev stop   → kills everything
+npx rift-dev status → shows what's running
+npx rift-dev fix    → diagnoses crashed services
 ```
 
 ## Quick start
 
 ```bash
 cd my-fullstack-project
-npx rift init
-npx rift run
+npx rift-dev init
+npx rift-dev run
 ```
 
-That's it. No config files to write. Rift scans your project, detects frameworks, and generates a `rift.yml` with the right commands, ports, and dependencies.
+That's it. No config files to write. Rift scans your project, detects frameworks, resolves port conflicts, and generates a `rift.yml` with the right commands, ports, and dependencies.
 
 ## Example output
 
 ```
-$ npx rift init
+$ npx rift-dev init
 rift  scanning ./my-project...
+rift  port conflict: reassigned worker from :3000 to :3001
+rift  updated frontend/.env (:3000 -> :3001)
 rift  detected 3 services:
 rift    api       django    ./backend       :8000
 rift    frontend  nextjs    ./frontend      :3000
-rift    worker    celery    ./backend       :--
+rift    worker    express   ./worker        :3001
 rift  wrote rift.yml
-rift  run `npx rift run` to start all services
+rift  run `npx rift-dev run` to start all services
 ```
 
 ```
-$ npx rift run
+$ npx rift-dev run
 rift      starting api (port 8000)...
 rift      starting frontend (port 3000)...
 api       Watching for file changes with StatReloader
 api       System check identified no issues.
 frontend  ready - started server on 0.0.0.0:3000
+frontend  compiled in 1.2s
 ```
+
+## Features
+
+- **Zero-config detection** — scans your project and figures out what to run
+- **Port conflict resolution** — auto-reassigns ports and updates `.env` files
+- **Multiplexed logs** — color-coded output from all services in one terminal
+- **Auto-restart** — crashed services restart with exponential backoff
+- **Crash diagnosis** — `rift fix` analyzes logs and suggests fixes (AI-powered or pattern matching)
+- **Dependency ordering** — services start in the right order based on `depends_on`
+- **JSON output** — `--json` flag on all commands for scripts and AI agents
+- **MCP server** — expose rift as tools for Claude Code and other MCP clients
 
 ## Supported frameworks
 
@@ -47,30 +62,111 @@ frontend  ready - started server on 0.0.0.0:3000
 |-----------|-----------------|
 | Next.js | `next.config.*` or `next` in deps |
 | React (CRA/Vite) | `react-scripts` or `vite` + `react` in deps |
-| Vue | `vue` in deps |
+| Vue | `vue` in deps + `src/App.vue` |
 | Nuxt | `nuxt.config.*` or `nuxt` in deps |
 | Svelte/SvelteKit | `svelte.config.*` or `svelte`/`@sveltejs/kit` in deps |
 | Angular | `angular.json` or `@angular/core` in deps |
-| Express | `express` in deps |
+| Expo/React Native | `expo` in deps |
+| Express | `express` in deps (with start/dev script) |
 | Fastify | `fastify` in deps |
 | NestJS | `nest-cli.json` or `@nestjs/core` in deps |
-| Django | `manage.py` + `django` in requirements.txt |
-| Flask | `app.py`/`wsgi.py` + `flask` in requirements.txt |
-| FastAPI | `fastapi` in requirements.txt |
+| Django | `manage.py` + `django` in requirements |
+| Flask | `app.py`/`wsgi.py` + `flask` in requirements |
+| FastAPI | `fastapi` in requirements or pyproject.toml |
 | Rails | `Gemfile` + `config/routes.rb` + `rails` in Gemfile |
 | Go | `go.mod` |
 | Rust | `Cargo.toml` |
 
-## AI-powered detection
+Set `ANTHROPIC_API_KEY` to enable AI detection for frameworks beyond this list.
 
-Set `ANTHROPIC_API_KEY` to enable AI detection for non-standard project structures. Rift uses Claude Haiku (~$0.001/call) to analyze your project and detect services that rule-based detection might miss.
+## Commands
+
+### `rift init`
+
+Scans the project, detects services, resolves port conflicts, and writes `rift.yml`.
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-npx rift init
+npx rift-dev init              # rule-based detection
+ANTHROPIC_API_KEY=sk-... npx rift-dev init  # AI-enhanced detection
 ```
 
-AI detection is optional. Everything works without it — rule-based detection is the default.
+### `rift run`
+
+Starts all services with multiplexed logs. Press `r` to show CPU/memory usage.
+
+```bash
+npx rift-dev run
+npx rift-dev run --max-restarts 5
+```
+
+### `rift stop`
+
+Stops all running services.
+
+```bash
+npx rift-dev stop
+```
+
+### `rift status`
+
+Shows running services with PIDs, ports, and uptime.
+
+```bash
+npx rift-dev status
+npx rift-dev status --json
+```
+
+### `rift fix`
+
+Diagnoses crashed services using AI or pattern matching.
+
+```bash
+npx rift-dev fix               # diagnose only
+npx rift-dev fix --apply       # diagnose and execute fixes
+```
+
+## Global flags
+
+| Flag | Short | Purpose |
+|------|-------|---------|
+| `--verbose` | `-v` | Debug output and stack traces |
+| `--no-color` | -- | Disable colors (also respects `NO_COLOR` env var) |
+| `--config <path>` | `-c` | Use a specific rift.yml |
+| `--json` | -- | Structured JSON output for scripts and AI agents |
+
+## MCP server
+
+Rift ships an MCP server that exposes 6 tools for Claude Code and other MCP clients:
+
+| Tool | Purpose |
+|------|---------|
+| `rift_detect` | Scan project and write rift.yml |
+| `rift_status` | Show running services |
+| `rift_start` | Start services |
+| `rift_stop` | Stop services |
+| `rift_diagnose` | Diagnose crashed services |
+| `rift_fix_apply` | Diagnose and execute fixes |
+
+### Setup with Claude Code
+
+```bash
+claude mcp add rift-mcp -- npx rift-dev mcp
+```
+
+### Setup with Claude Desktop
+
+Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "rift": {
+      "command": "npx",
+      "args": ["rift-dev", "mcp"]
+    }
+  }
+}
+```
 
 ## rift.yml
 
@@ -88,6 +184,7 @@ services:
     test: python manage.py test
     install: pip install -r requirements.txt
     port: 8000
+    restart: 5
     depends_on: []
     env:
       DATABASE_URL: postgres://localhost:5432/mydb
@@ -104,15 +201,14 @@ services:
       - api
 ```
 
-## Global flags
-
-| Flag | Short | Purpose |
-|------|-------|---------|
-| `--verbose` | `-v` | Debug output and stack traces |
-| `--no-color` | — | Disable colors (also respects `NO_COLOR` env var) |
-| `--config <path>` | `-c` | Use a specific rift.yml (default: `./rift.yml`) |
-
 ## Contributing
+
+```bash
+bun install          # install deps
+bun run dev          # run from source
+bun test             # 94 tests
+bun run build        # compile TS → JS
+```
 
 See [CLAUDE.md](./CLAUDE.md) for architecture, coding standards, and design principles.
 
