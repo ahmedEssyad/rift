@@ -4,6 +4,8 @@ Zero-config multi-service runner for full-stack projects. One command to detect,
 
 > Published as `rift-dev` on npm (`rift` was taken). Install once, then use `rift` everywhere.
 
+Read the deep dive: [The Architecture of a Zero-Config Dev Runner](https://blog.essyad.site/rift-the-architecture-of-a-zero-config-dev-runner)
+
 ```
 rift init   → scans your project, generates rift.yml
 rift run    → starts all services, one terminal

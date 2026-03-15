@@ -5,6 +5,7 @@ import { X, Github } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 const NAV_ITEMS = ["Features", "Frameworks", "Demo", "Install"];
+const BLOG_URL = "https://blog.essyad.site/rift-the-architecture-of-a-zero-config-dev-runner";
 
 export default function FloatingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -45,6 +46,12 @@ export default function FloatingNav() {
 
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
+            <a
+              href={BLOG_URL}
+              className="text-[14px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150"
+            >
+              Blog
+            </a>
             <a
               href="https://github.com/your-username/rift"
               className="text-[14px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-150 flex items-center gap-2"
@@ -96,6 +103,13 @@ export default function FloatingNav() {
 
         <div className="mt-8 pt-8 border-t border-[var(--border)] space-y-3">
           <a
+            href={BLOG_URL}
+            onClick={() => setMobileMenuOpen(false)}
+            className="block w-full px-4 py-4 text-center text-[15px] font-medium text-[var(--text-secondary)] rounded-2xl hover:bg-[var(--surface-secondary)] transition-colors"
+          >
+            Blog
+          </a>
+          <a
             href="https://github.com/your-username/rift"
             onClick={() => setMobileMenuOpen(false)}
             className="block w-full px-4 py-4 text-center text-[15px] font-medium text-[var(--text-secondary)] rounded-2xl hover:bg-[var(--surface-secondary)] transition-colors"
@@ -112,6 +126,7 @@ export default function FloatingNav() {
         </div>
 
         <div className="mt-auto mb-10 flex items-center justify-center gap-6 text-[14px] text-[var(--text-secondary)]">
+          <ThemeToggle />
           <a href="https://npmjs.com/package/rift-dev" className="hover:text-[var(--text-primary)] transition-colors">npm</a>
           <a href="https://github.com/your-username/rift" className="hover:text-[var(--text-primary)] transition-colors">GitHub</a>
         </div>
